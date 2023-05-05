@@ -1,24 +1,30 @@
 import discord
 from datetime import datetime
 from time import mktime
+from handlers.UserCache import UserCache
 
-from handlers.TimerCache import TimerCache
+cache = UserCache()
 
-def processMessage(msg):
-    if criteriaFilter(msg):
-        TimerCache.updateCache(id)
+class messageHandler:
+    def __init__(self):
+        self.msgLenThreshold = 2
+        self.timerThreshold = 3
 
-def criteriaFilter(message: discord.Message) -> bool:
-    ## Message must be at least 2 characters
-    if len(message.content) < 2:
-        return False
+    def processMessage(self, msg):
+        if self.criteriaFilter(msg):
+            print(cache.getUser(msg.author.id))
+            cache.setUser(msg.author.id)
 
-    ## Message will only count if previous message was 3 seconds ago
-    now = mktime(datetime.now().timetuple())
+    def criteriaFilter(self, msg: discord.Message) -> bool:
+        ## Message must be at least 2 characters
+        if len(msg.content) < self.msgLenThreshold:
+            return False
 
-    record = TimerCache.getUser(message.author.id)
-    print(record)
-    if (record[2] + 3) < now:
-        return False
+        ## Message will only count if previous message was 3 seconds ago
+        now = mktime(datetime.now().timetuple())
+        record = cache.getUser(msg.author.id)
+        if record:
+            if (record[2] + self.timerThreshold) > now:
+                return False
 
-    return True
+        return True

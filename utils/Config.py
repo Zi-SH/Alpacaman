@@ -8,6 +8,8 @@ class Config:
         self.prefix = bot['prefix']
         self.desc   = bot['desc']
         self.token  = bot['token']
+        self.owner  = bot['owner']
+        self.threshold  = bot['threshold']
 
         # Pain in my ass to be quite honest
         self.intents = discord.Intents.default()

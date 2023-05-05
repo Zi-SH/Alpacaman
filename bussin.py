@@ -1,9 +1,8 @@
+import asyncio
 import json, sys, logging
-import discord
-from handlers import messageHandler
-
+from handlers.messageHandler import messageHandler
 from utils.Config import Config
-from handlers.TimerCache import TimerCache
+from handlers import userCacheTimer
 from discord.ext import commands
 
 setting = Config()
@@ -11,8 +10,8 @@ setting = Config()
 # Init bot
 client = commands.Bot(command_prefix=setting.prefix, description=setting.desc, case_insensitive=True, intents=setting.intents)
 
-# Init Cache
-cache = TimerCache()
+# Init Message Handler
+messageHandler = messageHandler()
 
 # Enable logging
 log = logging.getLogger()
@@ -20,6 +19,16 @@ con = logging.StreamHandler()
 
 log.addHandler(con)
 log.setLevel(logging.WARN)
+
+
+@client.event
+async def setup_hook():
+    # Init Timers
+    timerLoop = asyncio.get_event_loop()
+    timerLoop.create_task(userCacheTimer.cacheWriteTask())
+    timerLoop.create_task(userCacheTimer.monthlyThreshold())
+
+    # Load roleHandler
 
 @client.event
 async def on_ready():
@@ -29,8 +38,5 @@ async def on_ready():
 @client.event
 async def on_message(msg):
     messageHandler.processMessage(msg)
-
-    print(msg.author)
-    print(msg.author.id)
 
 client.run(setting.token)
